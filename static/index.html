@@ -2,9 +2,131 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <!-- 引入样式 -->
+    <link rel="stylesheet" href="elelib/index.css">
+    <!-- 引入组件库 -->
+    <script src="elelib/vue.js"></script>
+    <script src="elelib/index.js"></script>
+    <script src="elelib/jquery.js"></script>
+
     <title>Title</title>
 </head>
 <body>
+<div id="app">
+
+    <el-card>
+        <el-form ref="form" :model="form" label-width="40px" :inline="true">
+            <el-button type="primary" @click="form.cmd_data_id = ''">清空ID</el-button>
+            <el-form-item label="ID">
+                <el-input v-model="form.cmd_data_id" placeholder="留空为新增" style="width: 340px;" :disabled="true"></el-input>
+            </el-form-item>
+            <el-form-item label="名称">
+                <el-input v-model="form.name"></el-input>
+            </el-form-item>
+            <el-form-item label="命令">
+                <el-input v-model="form.cmd"></el-input>
+            </el-form-item>
+
+            <el-button type="primary" @click="saveCmd" v-if="form.cmd_data_id == ''">新增</el-button>
+            <el-button type="primary" @click="saveCmd" v-else>保存</el-button>
+        </el-form>
+
+
+        <el-table
+                :data="tableData"
+                style="width: 100%">
+            <el-table-column
+                    label="名称"
+                    prop="name"
+                    width="180">
+            </el-table-column>
+            <el-table-column
+                    label="命令详情"
+                    prop="cmd">
+            </el-table-column>
+            <el-table-column label="操作"
+                             width="300">
+                <template slot-scope="scope">
+                    <el-button
+                            size="mini"
+                            @click="startCmd(scope.row.cmd)">执行
+                    </el-button>
+                    <el-button
+                            size="mini"
+                            @click="handleEdit(scope.row)">编辑
+                    </el-button>
+                    <el-button
+                            size="mini"
+                            type="danger"
+                            @click="handleDelete(scope.$index, scope.row)">删除
+                    </el-button>
+                </template>
+            </el-table-column>
+        </el-table>
+
+    </el-card>
+
+
+</div>
+
+
+<script>
+    var app = new Vue({
+        el: '#app',
+        data: function () {
+            return {
+                form: {
+                    cmd_data_id: "",
+                    cmd: "",
+                    name: "",
+                },
+                tableData: []
+            }
+        },
+        methods: {
+            startCmd: function (cmd) {
+                $.post("/Api/App/Cmd/start.json", {
+                    cmd: cmd
+                });
+            },
+            saveCmd: function () {
+                $.post("/Api/App/Cmd/save.json", JSON.parse(JSON.stringify(app.form)), function (data) {
+                    if (data.code != 0) {
+                        app.$notify.error({
+                            title: '错误',
+                            message: data.message
+                        });
+                    }
+                    getList();
+                });
+            },
+            handleEdit: function (row) {
+                app.form =  JSON.parse(JSON.stringify(row));
+            },
+            handleDelete: function (index, row) {
+                $.post("/Api/App/Cmd/delete.json", JSON.parse(JSON.stringify(row)), function (data) {
+                    if (data.code != 0) {
+                        app.$notify.error({
+                            title: '错误',
+                            message: data.message
+                        });
+                    }
+                    getList();
+                });
+            },
+        }
+    });
+
+
+    function getList() {
+
+        $.get("/Api/App/Cmd/get.json", function (data) {
+            app.tableData = data.data;
+        })
+    }
+
+    getList();
+</script>
 
 </body>
 </html>
