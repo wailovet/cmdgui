@@ -6,9 +6,10 @@ import (
 )
 
 type CmdData struct {
-	CmdDataID string `json:"cmd_data_id"`
-	Name      string `json:"name"`
-	Cmd       string `json:"cmd"`
+	CmdDataID  string `json:"cmd_data_id"`
+	Name       string `json:"name"`
+	Cmd        string `json:"cmd"`
+	OptionData string `json:"option_data"`
 }
 
 func (that CmdData) ID() (jsonField string, value interface{}) {
