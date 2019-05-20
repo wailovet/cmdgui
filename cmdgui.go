@@ -11,6 +11,7 @@ import (
 func main() {
 	core.SetConfig(&core.Config{
 		Port:         "2880",
+		Host:         "127.0.0.1",
 		StaticRouter: "/T/*",
 	})
 
