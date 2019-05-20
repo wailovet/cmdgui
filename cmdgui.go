@@ -17,7 +17,7 @@ func main() {
 	})
 
 	//go-bindata-assetfs static/...
-	if os.Args[1] == "dev" {
+	if len(os.Args) > 1 && os.Args[1] == "dev" {
 		osmanthuswine.GetChiRouter().Handle("/*", http.FileServer(http.Dir("../static/")))
 	} else {
 		osmanthuswine.GetChiRouter().Handle("/*", http.FileServer(assetFS()))
