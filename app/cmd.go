@@ -3,6 +3,7 @@ package app
 import (
 	"github.com/wailovet/cmdgui/helper"
 	"github.com/wailovet/osmanthuswine/src/core"
+	"runtime"
 )
 
 type Cmd struct {
@@ -34,11 +35,19 @@ func (that *Cmd) Get() {
 
 func (that *Cmd) Start() {
 	cmd := that.Request.REQUEST["cmd"]
-
-	pty := helper.NewPty("sh")
-	pty.Start(func(data []byte) {
-		println(string(data))
-	})
-	pty.Write([]byte(cmd + "\nexit\n"))
+	var pty *helper.Pty
+	if runtime.GOOS == "windows" {
+		pty = helper.NewPty("powershell.exe")
+		_ = pty.Start(func(data []byte) {
+			print(string(data))
+		})
+		_, _ = pty.Write([]byte(cmd + "\r\nexit\r\n"))
+	} else {
+		pty = helper.NewPty("sh")
+		_ = pty.Start(func(data []byte) {
+			print(string(data))
+		})
+		_, _ = pty.Write([]byte(cmd + "\nexit\n"))
+	}
 
 }

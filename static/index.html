@@ -72,16 +72,32 @@
 
     <el-dialog :title="cmd_option_title" :visible.sync="show_cmd_option">
         <el-form label-position="left">
-            <el-form-item label="配置名" label-width="100px">
+            <el-form-item label="配置" label-width="100px">
                 <el-select v-model="option_data_result" placeholder="选择配置">
-                    <el-option v-for="item in option_data" :label="item.name" :value="item"></el-option>
+                    <el-option v-for="(item,index) in form.option_data" :label="item.name" :value="index"></el-option>
                 </el-select>
             </el-form-item>
 
-            <el-form-item :label="item.name" label-width="100px" v-for="item in cmd_option">
-                <el-input v-model="item.value" autocomplete="on" v-if="item.pre_arg.indexOf('{$$}') > -1"></el-input>
-                <el-switch v-model="item.value" v-else></el-switch>
+            <el-form-item label="配置名" label-width="100px" v-if="option_data_result == 0">
+                <el-input v-model="add_cmd_option_name"></el-input>
             </el-form-item>
+
+            <div v-if="option_data_result > 0 ">
+                <el-form-item :label="item.name" label-width="100px"
+                              v-for="item in form.option_data[option_data_result].cmd_option">
+                    <el-input v-model="item.value" autocomplete="on"
+                              v-if="item.pre_arg.indexOf('{$$}') > -1"></el-input>
+                    <el-switch v-model="item.value" v-else></el-switch>
+                </el-form-item>
+            </div>
+            <div v-else>
+                <el-form-item :label="item.name" label-width="100px"
+                              v-for="item in cmd_option">
+                    <el-input v-model="item.value" autocomplete="on"
+                              v-if="item.pre_arg.indexOf('{$$}') > -1"></el-input>
+                    <el-switch v-model="item.value" v-else></el-switch>
+                </el-form-item>
+            </div>
 
             <el-form-item label="预执行命令" label-width="100px">
                 <el-input :value="show_cmd_option?preCmd(0):''" type="textarea" :rows="7" :disabled="true"></el-input>
@@ -104,26 +120,59 @@
                     cmd_data_id: "",
                     cmd: "",
                     name: "",
+                    option_data: [],
                 },
                 active_names: "",
                 cmd_option_title: "",
                 cmd_option: [],
-                option_data: [],
-                option_data_result: {},
+                add_cmd_option_name: "",
+                option_data_result: 0,
+                option_data_main_cmd: "",
                 table_data: [],
                 show_cmd_option: false
             }
         },
         methods: {
+            saveOption: function () {
+                if (app.option_data_result == 0) {
+                    var name = app.add_cmd_option_name;
+                    app.form.option_data.push({
+                        name: name,
+                        cmd_option: app.cmd_option
+                    })
+                }
+
+                var send_data = JSON.parse(JSON.stringify(app.form));
+                send_data.option_data = JSON.stringify(app.form.option_data);
+                $.post("/Api/App/Cmd/save.json", send_data, function (data) {
+                    if (data.code != 0) {
+                        app.$notify.error({
+                            title: '错误',
+                            message: data.message
+                        });
+                        return
+                    }
+                    if (app.option_data_result == 0) {
+                        app.option_data_result = app.form.option_data.length - 1;
+                    }
+                    getList();
+
+                    app.$notify.success({
+                        title: '保存',
+                        message: data.message
+                    });
+
+                });
+            },
             preCmd: function () {
 
                 var tmp = [];
-                for (var i in app.cmd_option) {
-                    if (app.cmd_option[i].value != "") {
-                        tmp.push(app.cmd_option[i].pre_arg.replace("{$$}", app.cmd_option[i].value))
+                for (var i in app.form.option_data[app.option_data_result].cmd_option) {
+                    if (app.form.option_data[app.option_data_result].cmd_option[i].value != "") {
+                        tmp.push(app.form.option_data[app.option_data_result].cmd_option[i].pre_arg.replace("{$$}", app.form.option_data[app.option_data_result].cmd_option[i].value))
                     }
                 }
-                return tmp.join(" ");
+                return [app.option_data_main_cmd].concat(tmp).join(" ");
             },
             showCmdOption: function (data) {
                 var title = data.title;
@@ -131,14 +180,14 @@
                 app.cmd_option = [];
 
 
-                app.option_data = data.option_data;
-
+                app.form = JSON.parse(JSON.stringify(data));
+                app.form.option_data = data.option_data;
 
                 app.cmd_option_title = title;
                 app.show_cmd_option = true;
                 var tmp = cmd.split("\n");
                 console.log(tmp);
-
+                app.option_data_main_cmd = tmp[0];
                 for (var i = 1; i < tmp.length; i++) {
                     var pre_arg_and_name = tmp[i].split("//");
                     console.log(pre_arg_and_name);
@@ -155,6 +204,8 @@
                     }
 
                 }
+
+
             },
             startCmd: function (title, cmd) {
                 app.cmd_option_title = title
@@ -199,12 +250,19 @@
             for (var i = 0; i < data.data.length; i++) {
                 try {
                     data.data[i].option_data = JSON.parse(data.data[i].option_data)
+                    if (data.data[i].option_data[0].name != "新增配置") {
+                        data.data[i].option_data = [
+                            {
+                                name: "新增配置",
+                                cmd_option: [],
+                            }
+                        ].concat(data.data[i].option_data);
+                    }
                 } catch (e) {
                     data.data[i].option_data = [
                         {
-                            name: "默认配置",
-                            main_cmd: "",
-                            cmd_option: "",
+                            name: "新增配置",
+                            cmd_option: [],
                         }
                     ]
                 }
