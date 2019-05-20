@@ -17,10 +17,12 @@ func (that CmdData) ID() (jsonField string, value interface{}) {
 	jsonField = "cmd_data_id"
 	return
 }
+func GetBase() string {
 
+	return "./.cmdgui"
+}
 func GetCmdData() (data []CmdData) {
-
-	driver, err := db.New("cmdgui")
+	driver, err := db.New(GetBase())
 	if err != nil {
 		return data
 	}
@@ -28,7 +30,7 @@ func GetCmdData() (data []CmdData) {
 	return data
 }
 func DeleteCmdData(id string) error {
-	driver, err := db.New("cmdgui")
+	driver, err := db.New(GetBase())
 	if err != nil {
 		return err
 	}
@@ -38,7 +40,7 @@ func DeleteCmdData(id string) error {
 }
 
 func SaveCmdData(cd CmdData) error {
-	driver, err := db.New("cmdgui")
+	driver, err := db.New(GetBase())
 	if err != nil {
 		return err
 	}
