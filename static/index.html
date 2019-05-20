@@ -46,6 +46,7 @@
             </el-table-column>
             <el-table-column
                     label="命令详情"
+                    show-overflow-tooltip
                     prop="cmd">
             </el-table-column>
             <el-table-column label="操作"
@@ -115,7 +116,7 @@
 </div>
 
 <style>
-    .el-form-item__label {
+    .el-form-item__label ,.cell{
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
@@ -217,7 +218,6 @@
 
             },
             startCmd: function (cmd) {
-                app.show_cmd_option = false;
                 $.post("/Api/App/Cmd/start.json", {
                     cmd: cmd
                 });
