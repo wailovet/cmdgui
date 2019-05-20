@@ -85,17 +85,21 @@
             <div v-if="option_data_result > 0 ">
                 <el-form-item :label="item.name" label-width="100px"
                               v-for="item in form.option_data[option_data_result].cmd_option">
-                    <el-input v-model="item.value" autocomplete="on"
+                    <el-input v-model="item.value" autocomplete="on" :placeholder="item.name"
                               v-if="item.pre_arg.indexOf('{$$}') > -1"></el-input>
-                    <el-switch v-model="item.value" v-else></el-switch>
+                    <el-tooltip :content="item.name" effect="light" v-else>
+                        <el-switch v-model="item.value"></el-switch>
+                    </el-tooltip>
                 </el-form-item>
             </div>
             <div v-else>
                 <el-form-item :label="item.name" label-width="100px"
                               v-for="item in cmd_option">
-                    <el-input v-model="item.value" autocomplete="on"
+                    <el-input v-model="item.value" autocomplete="on" :placeholder="item.name"
                               v-if="item.pre_arg.indexOf('{$$}') > -1"></el-input>
-                    <el-switch v-model="item.value" v-else></el-switch>
+                    <el-tooltip :content="item.name" effect="light" v-else>
+                        <el-switch v-model="item.value"></el-switch>
+                    </el-tooltip>
                 </el-form-item>
             </div>
 
@@ -110,7 +114,13 @@
     </el-dialog>
 </div>
 
-
+<style>
+    .el-form-item__label {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+</style>
 <script>
     var app = new Vue({
         el: '#app',

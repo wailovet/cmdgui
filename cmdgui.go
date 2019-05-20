@@ -6,6 +6,7 @@ import (
 	"github.com/wailovet/osmanthuswine/src/core"
 	"log"
 	"net/http"
+	"os"
 )
 
 func main() {
@@ -16,8 +17,11 @@ func main() {
 	})
 
 	//go-bindata-assetfs static/...
-	osmanthuswine.GetChiRouter().Handle("/*", http.FileServer(assetFS()))
-	//osmanthuswine.GetChiRouter().Handle("/*", http.FileServer(http.Dir("../static/")))
+	if os.Args[1] == "dev" {
+		osmanthuswine.GetChiRouter().Handle("/*", http.FileServer(http.Dir("../static/")))
+	} else {
+		osmanthuswine.GetChiRouter().Handle("/*", http.FileServer(assetFS()))
+	}
 	log.Println("Open the http://127.0.0.1:2880/")
 
 	core.GetInstanceRouterManage().Registered(&app.Cmd{})
