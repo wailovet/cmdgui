@@ -178,8 +178,7 @@
                 var title = data.title;
                 var cmd = data.cmd;
                 app.cmd_option = [];
-
-
+                app.option_data_result = 0;
                 app.form = JSON.parse(JSON.stringify(data));
                 app.form.option_data = data.option_data;
 
@@ -214,7 +213,9 @@
                 });
             },
             saveCmd: function () {
-                $.post("/Api/App/Cmd/save.json", JSON.parse(JSON.stringify(app.form)), function (data) {
+                var send_data = JSON.parse(JSON.stringify(app.form));
+                send_data.option_data = JSON.stringify(app.form.option_data);
+                $.post("/Api/App/Cmd/save.json", send_data, function (data) {
                     if (data.code != 0) {
                         app.$notify.error({
                             title: '错误',
