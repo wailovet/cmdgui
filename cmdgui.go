@@ -25,5 +25,6 @@ func main() {
 	log.Println("Open the http://127.0.0.1:2880/")
 
 	core.GetInstanceRouterManage().Registered(&app.Cmd{})
+	core.GetInstanceRouterManage().Registered(&app.Console{})
 	osmanthuswine.Run()
 }

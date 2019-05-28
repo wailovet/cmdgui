@@ -39,12 +39,20 @@ func (that *Cmd) Start() {
 	if runtime.GOOS == "windows" {
 		pty = helper.NewPty("powershell.exe")
 		_ = pty.Start(func(data []byte) {
+			ws := GetInstanceConsole("All")
+			if ws != nil {
+				ws.GetWebSocket().Broadcast(data)
+			}
 			print(string(data))
 		})
 		_, _ = pty.Write([]byte(cmd + "\r\nexit\r\n"))
 	} else {
 		pty = helper.NewPty("sh")
 		_ = pty.Start(func(data []byte) {
+			ws := GetInstanceConsole("All")
+			if ws != nil {
+				ws.GetWebSocket().Broadcast(data)
+			}
 			print(string(data))
 		})
 		_, _ = pty.Write([]byte(cmd + "\nexit\n"))

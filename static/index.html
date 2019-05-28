@@ -15,6 +15,9 @@
 <div id="app">
 
     <el-card>
+        <el-button type="primary" @click="show_console=true" size="mini" style="margin-bottom: 12px;">控制台</el-button>
+
+
         <el-collapse v-model="active_names">
             <el-collapse-item title="添加/编辑" name="1">
                 <el-form ref="form" :model="form" label-width="40px">
@@ -113,10 +116,15 @@
             <el-button type="primary" @click="startCmd(preCmd())">执行</el-button>
         </div>
     </el-dialog>
+
+
+    <el-dialog :visible.sync="show_console" width="800px">
+        <pre style="width: 100%;height: 300px;background: #2b2b2b;font-size: 12px;color: #a49e49;border: 5px solid #2b2b2b;overflow: auto; ">{{console_content}}</pre>
+    </el-dialog>
 </div>
 
 <style>
-    .el-form-item__label ,.cell{
+    .el-form-item__label, .cell {
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
@@ -140,7 +148,9 @@
                 option_data_result: 0,
                 option_data_main_cmd: "",
                 table_data: [],
-                show_cmd_option: false
+                show_cmd_option: false,
+                show_console: false,
+                console_content: "",
             }
         },
         methods: {
@@ -282,6 +292,22 @@
     }
 
     getList();
+
+
+    var websocketInit = function () {
+        var ws = new WebSocket("ws://" + location.host + "/Api/App/Console/all");
+        ws.onmessage = function (data) {
+            if (data && data.data) {
+                app.console_content += data.data;
+            }
+        };
+        ws.onclose = function () {
+            setTimeout(function () {
+                websocketInit();
+            }, 10 * 1000)
+        }
+    }
+    websocketInit();
 </script>
 
 </body>
